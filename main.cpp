@@ -14,18 +14,36 @@ double calc_euclidian(vector<double> a, vector<double> b, vector<double> c);
 struct Instance //holds data instances
 {
     private:
-        int class; //two classes for this project
+        int class; //two possible classes for this project
         vector<double> features; //features of each instance
-    public: 
-        Instance();
-        //setters
-        void add_feature(double);
-        void set_class(int);
-        //getters
-        void get_features(); 
-        void get_class();
         
-        void output();
+    public: 
+        Instance()
+        {
+            class = 0; //must be set to 1 or 2 eventually
+        }
+        //setters
+        void add_feature(double feature_to_add)
+        {
+            features.push_back(feature_to_add);
+            return; 
+        }
+        void set_class(int class)
+        {
+            this->class = class; 
+            return; 
+        }
+        //getters
+        void get_features()
+        {
+            return features; 
+        }
+        void get_class()
+        {
+            return class; 
+        }
+        
+        void output(); //implement later for trace
         
 };
 class Data_Set
