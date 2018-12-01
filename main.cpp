@@ -56,7 +56,7 @@ struct Instance //holds data instances
         
         void output()
         {
-            cout << "Class: " << class_type << " Features: ";
+            cout << "Class:" << class_type << " Features: ";
             for (int i = 0; i < features.size(); i++)
             {
                 cout << features.at(i) << " ";
@@ -103,46 +103,77 @@ int main()
     cout << "1)   Forward Selection" << endl;
     cout << "2)   Backward Elimination" << endl;
     cout << "3)   Nate's Special Algorithm" << endl;
+    cout << endl << endl;
     
     //testing ifstream
     ifstream my_input_file;
     my_input_file.open(fileName.c_str());
     vector<Instance> instanceVect;
+    //string inputRow; //TEST
     
-    while (my_input_file.good())
+    while (my_input_file.good())//( getline(my_input_file, inputRow)) //my_input_file.good())
     {
         Instance newInst; 
         vector<double> features; 
-        int type; 
+        //cout << features.size() << "TEST" << endl;
+        int class_type = -1;
         double featToAdd;
+        string inputRow; //temp string  
         
-        string inputRow;
+       /* string input = "abc d,ef,ghi";
+        istringstream ss(input);
+        string token;
+ 
+        while(getline(ss, token, '\t')) {
+        cout << token << '\n';
+        } */
+
+        
+        
         getline(my_input_file, inputRow);  
         
-        //cout << inputRow << endl;
+        cout << inputRow << endl; //TEST
         
-        istringstream parse(inputRow);
+        istringstream ss(inputRow);
         
-        parse >> type;
+        //cout << ss.str() << " : ss.str() test" << endl; //TEST
         
-        newInst.set_class(type);
+        ss >> class_type;
         
-        while(parse >> featToAdd)
+        if (class_type == -1) //no more lines to parse
         {
-            newInst.add_feature(featToAdd);         
+            break;
         }
         
-        instanceVect.push_back(newInst);                                 
+        else //set class_type
+        {
+            cout << "Class_type is: " << class_type << endl; //TEST
+            newInst.set_class(class_type);
+        }
+        //cout << ss.str() << " are current contents of string stream. THIS IS TEST" << endl;
+        
+        while(ss >> featToAdd) //while still features to add
+        {
+            if(featToAdd != 0)
+            {
+                newInst.add_feature(featToAdd);
+                cout << "Adding new feature value: " << featToAdd << " Size of feature vector is now: " <<  newInst.get_features().size() << endl; //TEST
+            }
+            
+        }
+        
+        instanceVect.push_back(newInst);  
     }
+    
     my_input_file.close();
   
-    for (int i = 0; i < instanceVect.size(); i++)
+   /* for (int i = 0; i < instanceVect.size(); i++) //TESTING PARSING
     {
         instanceVect.at(i).output();
-    } 
+    }  */
     
     
-     cout << "This dataset has " << numFeatures << " features with " << numInstances << " instances." << endl;
+    cout << "This dataset has " << instanceVect.at(0).get_features().size() << " features with " << instanceVect.size() << " instances." << endl;
     
     return 0;
 }
