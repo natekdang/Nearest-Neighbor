@@ -65,25 +65,9 @@ class Data_Set
         {
             return instances.size();
         }
-        double nearest_neighbor(vector<int>); //pass instances return accuracy
+        double leave_one_out_cross_validation();//data, current_set, feature_to_add); //pass instances return accuracy
 
 };
-
-/*double leave_one_out_cross_validation(data, current_set, feature_to_add)
-{
-    return rand; //test stub
-} */
-
-//helper for nearest neighbor, need to implement
-double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices)
-{
-    double euclidian = 0; 
-    for (int i = 0; i < indices.size(); i++) //calculate for only features in indices 
-    {
-        euclidian += pow(a.at(indices.at(i)) - b.at(indices.at(i)), 2); 
-    }
-    return euclidian;
-}
 
 vector<Instance> parseFile(string fileName)
 {
@@ -147,8 +131,24 @@ vector<Instance> parseFile(string fileName)
     
 }
 
-double Data_Set::nearest_neighbor(vector<int> data)
+//helper for nearest neighbor, need to implement
+double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices)
 {
+    double euclidian = 0; 
+    for (int i = 0; i < indices.size(); i++) //calculate for only features in indices 
+    {
+        euclidian += pow(a.at(indices.at(i)) - b.at(indices.at(i)), 2); 
+    }
+    return sqrt(euclidian);
+}
+
+double Data_Set::leave_one_out_cross_validation()//data, current_set, feature_to_add)
+{
+    /* iterate through entire set of instances leaving one out each time
+    calculate ecludian of each and determine the instance j that is 
+    i closest to i, if class_type of both are same then add one to correct
+    count, at end of loop return correct count/total instances
+    */
     return 0.0; //function stub
 }
 
