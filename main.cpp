@@ -3,24 +3,9 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <iomanip> //for outputting floats
 
 using namespace std;
-
-/*double leave_one_out_cross_validation(data, current_set, feature_to_add)
-{
-    return rand; //test stub
-} */
-
-//helper for nearest neighbor, need to implement
-double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices)
-{
-    double euclidian = 0; 
-    for (int i = 0; i < indices.size(); i++) //calculate for only features in indices 
-    {
-        euclidian += pow(a.at(indices.at(i)) - b.at(indices.at(i)), 2); 
-    }
-    return euclidian;
-}
 
 struct Instance //holds data instances
 {
@@ -84,32 +69,27 @@ class Data_Set
 
 };
 
-double Data_Set::nearest_neighbor(vector<int> data)
+/*double leave_one_out_cross_validation(data, current_set, feature_to_add)
 {
-    return 0.0; //function stub
+    return rand; //test stub
+} */
+
+//helper for nearest neighbor, need to implement
+double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices)
+{
+    double euclidian = 0; 
+    for (int i = 0; i < indices.size(); i++) //calculate for only features in indices 
+    {
+        euclidian += pow(a.at(indices.at(i)) - b.at(indices.at(i)), 2); 
+    }
+    return euclidian;
 }
 
-int main()
+vector<Instance> parseFile(string fileName)
 {
-    string fileName; 
-    int numFeatures;
-    int numInstances;
-    
-    cout << "Welcome to Nate Dang's Feature Selection Algorithm." << endl;
-    cout << "Type in the name of the file to test: "; 
-    cin >> fileName; 
-    cout << endl << endl;
-    cout << "Type the number of the algorithm you want to run." << endl << endl;
-    cout << "1)   Forward Selection" << endl;
-    cout << "2)   Backward Elimination" << endl;
-    cout << "3)   Nate's Special Algorithm" << endl;
-    cout << endl << endl;
-    
-    //testing ifstream
     ifstream my_input_file;
     my_input_file.open(fileName.c_str());
     vector<Instance> instanceVect;
-    //string inputRow; //TEST
     
     while (my_input_file.good())//( getline(my_input_file, inputRow)) //my_input_file.good())
     {
@@ -117,22 +97,12 @@ int main()
         vector<double> features; 
         //cout << features.size() << "TEST" << endl;
         int class_type = -1;
-        double featToAdd;
+        double featToAdd = 0; 
         string inputRow; //temp string  
-        
-       /* string input = "abc d,ef,ghi";
-        istringstream ss(input);
-        string token;
- 
-        while(getline(ss, token, '\t')) {
-        cout << token << '\n';
-        } */
-
-        
         
         getline(my_input_file, inputRow);  
         
-        cout << inputRow << endl; //TEST
+        //cout << inputRow << endl; //TEST
         
         istringstream ss(inputRow);
         
@@ -147,17 +117,14 @@ int main()
         
         else //set class_type
         {
-            cout << "Class_type is: " << class_type << endl; //TEST
             newInst.set_class(class_type);
         }
-        //cout << ss.str() << " are current contents of string stream. THIS IS TEST" << endl;
         
         while(ss >> featToAdd) //while still features to add
         {
-            if(featToAdd != 0)
+            if(featToAdd != 0) //fix 0 problem
             {
                 newInst.add_feature(featToAdd);
-                cout << "Adding new feature value: " << featToAdd << " Size of feature vector is now: " <<  newInst.get_features().size() << endl; //TEST
             }
             
         }
@@ -167,13 +134,46 @@ int main()
     
     my_input_file.close();
   
-   /* for (int i = 0; i < instanceVect.size(); i++) //TESTING PARSING
+    for (int i = 0; i < instanceVect.size(); i++) //TESTING PARSING
     {
         instanceVect.at(i).output();
-    }  */
+    } 
     
     
     cout << "This dataset has " << instanceVect.at(0).get_features().size() << " features with " << instanceVect.size() << " instances." << endl;
+    
+    return instanceVect;
+    
+    
+}
+
+double Data_Set::nearest_neighbor(vector<int> data)
+{
+    return 0.0; //function stub
+}
+
+int main()
+{
+    cout << setprecision(16); //testing, cout has default precision of 6
+    
+    string fileName; 
+    int numFeatures;
+    int numInstances;
+    vector<Instance> trainingInstances;
+    
+    cout << "Welcome to Nate Dang's Feature Selection Algorithm." << endl;
+    cout << "Type in the name of the file to test: "; 
+    cin >> fileName; 
+    trainingInstances = parseFile(fileName); //training data
+    cout << endl << endl;
+    cout << "Type the number of the algorithm you want to run." << endl << endl;
+    cout << "1)   Forward Selection" << endl;
+    cout << "2)   Backward Elimination" << endl;
+    cout << "3)   Nate's Special Algorithm" << endl;
+    cout << endl << endl;
+    
+    
+    
     
     return 0;
 }
