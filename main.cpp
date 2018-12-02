@@ -71,10 +71,8 @@ class Data_Set
         {
             return instances.at(0).get_features().size();
         }
-        double leave_one_out_cross_validation(Data_Set, vector<int>, int); 
-        
-        //void forward_feature_search(Data_Set data);
-        
+        double leave_one_out_cross_validation_add(Data_Set, vector<int>, int);
+        double leave_one_out_cross_validation_remove(Data_Set, vector<int>, int);
 
 };
 
@@ -151,32 +149,42 @@ double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices
     return sqrt(euclidian);
 }
 
-double Data_Set::leave_one_out_cross_validation(Data_Set data, vector<int>current_set, int feature_to_add)
+double Data_Set::leave_one_out_cross_validation_add(Data_Set data, vector<int>current_set, int feature_to_add)
 {
     /* iterate through entire set of instances leaving one out each time
     calculate ecludian of each and determine the instance j that is 
     i closest to i, if class_type of both are same then add one to correct
     count, at end of loop return correct count/total instances
     */
-    return 0.0; //function stub
+    return rand();
+}
+
+double Data_Set::leave_one_out_cross_validation_remove(Data_Set data, vector<int>current_set, int feature_to_remove)
+{
+    /* iterate through entire set of instances leaving one out each time
+    calculate ecludian of each and determine the instance j that is 
+    i closest to i, if class_type of both are same then add one to correct
+    count, at end of loop return correct count/total instances
+    */
+    return rand(); //function stub
 }
 
 void forward_feature_search(Data_Set data)
 {
     vector<int> current_set_of_features;
-    for (int i = 1; i < data.get_NumFeatures(); i++)
+    for (int i = 1; i <= data.get_NumFeatures(); i++)
     {
         cout << "On the " << i << "th level of the search tree" << endl;
-        int feature_to_add_at_this_level = -1;
+        int feature_to_add_at_this_level = 0;
         int best_so_far_accuracy = 0;
         
-        for (int k = 1; k < data.get_NumFeatures(); k++)
+        for (int k = 1; k <= data.get_NumFeatures(); k++)
         {
             if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
             {
                 int accuracy = 0; 
                 cout << "Considering adding the " << k << " feature" << endl;
-                accuracy = data.leave_one_out_cross_validation(data, current_set_of_features, (k + 1));
+                accuracy = data.leave_one_out_cross_validation_add(data, current_set_of_features, (k + 1));
                 
                 if (accuracy > best_so_far_accuracy)
                 {
@@ -187,11 +195,11 @@ void forward_feature_search(Data_Set data)
             }
         }
         
-        current_set_of_features.at(i) = feature_to_add_at_this_level; 
-        cout << "On level " << i << " i added feature" << feature_to_add_at_this_level << " to current set" << endl;
-        
-        return;
+        current_set_of_features.push_back(feature_to_add_at_this_level);
+        cout << "On level " << i << " i added feature " << feature_to_add_at_this_level << " to current set" << endl;
     }
+    
+    return;
 }
 
 void backward_feature_search(Data_Set data)
@@ -204,7 +212,7 @@ void backward_feature_search(Data_Set data)
     for (int i = 1; i <= data.get_NumFeatures(); i++)
     {
         cout << "On the " << i << "th level of the search tree" << endl;
-        int feature_to_add_at_this_level = -1;
+        int feature_to_remove_at_this_level = 0;
         int best_so_far_accuracy = 0;
         
         for (int k = 1; k <= data.get_NumFeatures(); k++)
@@ -212,23 +220,23 @@ void backward_feature_search(Data_Set data)
             if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
             {
                 int accuracy = 0; 
-                cout << "Considering adding the " << k << " feature" << endl;
-                accuracy = data.leave_one_out_cross_validation(data, current_set_of_features, (k + 1));
+                cout << "Considering removing the " << k << " feature" << endl;
+                accuracy = data.leave_one_out_cross_validation_remove(data, current_set_of_features, (k + 1));
                 
                 if (accuracy > best_so_far_accuracy)
                 {
                     best_so_far_accuracy = accuracy;
-                    feature_to_add_at_this_level = k;
+                    feature_to_remove_at_this_level = k;
                 }
                 
             }
         }
         
-        current_set_of_features.at(i) = feature_to_add_at_this_level; 
-        cout << "On level " << i << " i added feature" << feature_to_add_at_this_level << " to current set" << endl;
-        
-        return;
+        current_set_of_features.push_back(feature_to_remove_at_this_level);  //NEEDS TO BE FIXED TO REMOVE FEATURE
+        cout << "On level " << i << " i removed feature " << feature_to_remove_at_this_level << " to current set" << endl;
     }
+    
+    return;
 }
 
 /*
