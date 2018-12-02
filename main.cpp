@@ -197,17 +197,17 @@ void forward_feature_search(Data_Set data)
 void backward_feature_search(Data_Set data)
 {
     vector<int> current_set_of_features;
-    for (int i = 0; i < data.get_NumFeatures(); i++) //start with all features
+    for (int i = 1; i <= data.get_NumFeatures(); i++) //start with all features
     {
         current_set_of_features.push_back(i);
     }
-    for (int i = 1; i < data.get_NumFeatures(); i++)
+    for (int i = 1; i <= data.get_NumFeatures(); i++)
     {
         cout << "On the " << i << "th level of the search tree" << endl;
         int feature_to_add_at_this_level = -1;
         int best_so_far_accuracy = 0;
         
-        for (int k = 1; k < data.get_NumFeatures(); k++)
+        for (int k = 1; k <= data.get_NumFeatures(); k++)
         {
             if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
             {
