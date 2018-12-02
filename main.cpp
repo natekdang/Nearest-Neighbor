@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <iomanip> //for outputting floats
+#include <algorithm> //find k in vector
 
 using namespace std;
 
@@ -61,11 +62,19 @@ class Data_Set
             instances = data; //add data to instances vector
         };
         
-        int get_size() //return size of instances
+        int get_NumInstances() //return size of instances
         {
             return instances.size();
         }
-        double leave_one_out_cross_validation();//data, current_set, feature_to_add); //pass instances return accuracy
+        
+        int get_NumFeatures()
+        {
+            return instances.at(0).get_features().size();
+        }
+        double leave_one_out_cross_validation(Data_Set, vector<int>, int); 
+        
+        //void forward_feature_search(Data_Set data);
+        
 
 };
 
@@ -142,7 +151,7 @@ double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices
     return sqrt(euclidian);
 }
 
-double Data_Set::leave_one_out_cross_validation()//data, current_set, feature_to_add)
+double Data_Set::leave_one_out_cross_validation(Data_Set data, vector<int>current_set, int feature_to_add)
 {
     /* iterate through entire set of instances leaving one out each time
     calculate ecludian of each and determine the instance j that is 
@@ -152,25 +161,135 @@ double Data_Set::leave_one_out_cross_validation()//data, current_set, feature_to
     return 0.0; //function stub
 }
 
+void forward_feature_search(Data_Set data)
+{
+    vector<int> current_set_of_features;
+    for (int i = 1; i < data.get_NumFeatures(); i++)
+    {
+        cout << "On the " << i << "th level of the search tree" << endl;
+        int feature_to_add_at_this_level = -1;
+        int best_so_far_accuracy = 0;
+        
+        for (int k = 1; k < data.get_NumFeatures(); k++)
+        {
+            if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
+            {
+                int accuracy = 0; 
+                cout << "Considering adding the " << k << " feature" << endl;
+                accuracy = data.leave_one_out_cross_validation(data, current_set_of_features, (k + 1));
+                
+                if (accuracy > best_so_far_accuracy)
+                {
+                    best_so_far_accuracy = accuracy;
+                    feature_to_add_at_this_level = k;
+                }
+                
+            }
+        }
+        
+        current_set_of_features.at(i) = feature_to_add_at_this_level; 
+        cout << "On level " << i << " i added feature" << feature_to_add_at_this_level << " to current set" << endl;
+        
+        return;
+    }
+}
+
+void backward_feature_search(Data_Set data)
+{
+    vector<int> current_set_of_features;
+    for (int i = 0; i < data.get_NumFeatures(); i++) //start with all features
+    {
+        current_set_of_features.push_back(i);
+    }
+    for (int i = 1; i < data.get_NumFeatures(); i++)
+    {
+        cout << "On the " << i << "th level of the search tree" << endl;
+        int feature_to_add_at_this_level = -1;
+        int best_so_far_accuracy = 0;
+        
+        for (int k = 1; k < data.get_NumFeatures(); k++)
+        {
+            if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
+            {
+                int accuracy = 0; 
+                cout << "Considering adding the " << k << " feature" << endl;
+                accuracy = data.leave_one_out_cross_validation(data, current_set_of_features, (k + 1));
+                
+                if (accuracy > best_so_far_accuracy)
+                {
+                    best_so_far_accuracy = accuracy;
+                    feature_to_add_at_this_level = k;
+                }
+                
+            }
+        }
+        
+        current_set_of_features.at(i) = feature_to_add_at_this_level; 
+        cout << "On level " << i << " i added feature" << feature_to_add_at_this_level << " to current set" << endl;
+        
+        return;
+    }
+}
+
+/*
+function  feature_search_demo(data)
+ 
+current_set_of_features = []; % Initialize an empty set
+ 
+for i = 1 : size(data,2)-1 
+    disp(['On the ',num2str(i),'th level of the search tree'])
+    feature_to_add_at_this_level = [];
+    best_so_far_accuracy    = 0;    
+    
+     for k = 1 : size(data,2)-1 
+       if isempty(intersect(current_set_of_features,k)) % Only consider adding, if not already added.
+        disp(['--Considering adding the ', num2str(k),' feature'])
+        accuracy = leave_one_out_cross_validation(data,current_set_of_features,k+1);
+        
+        if accuracy > best_so_far_accuracy 
+            best_so_far_accuracy = accuracy;
+            feature_to_add_at_this_level = k;            
+        end        
+      end
+     end
+    
+    current_set_of_features(i) =  feature_to_add_at_this_level;
+    disp(['On level ', num2str(i),' i added feature ', num2str(feature_to_add_at_this_level), ' to current set'])
+        
+ end 
+end
+*/
+
+
 int main()
 {
     cout << setprecision(16); //testing, cout has default precision of 6
     
     string fileName; 
+    int searchType; 
     int numFeatures;
     int numInstances;
-    vector<Instance> trainingInstances;
+    vector<Instance> instances;
     
     cout << "Welcome to Nate Dang's Feature Selection Algorithm." << endl;
     cout << "Type in the name of the file to test: "; 
     cin >> fileName; 
-    trainingInstances = parseFile(fileName); //training data
+    instances = parseFile(fileName); //training data
+    Data_Set data(instances);
     cout << endl << endl;
     cout << "Type the number of the algorithm you want to run." << endl << endl;
     cout << "1)   Forward Selection" << endl;
     cout << "2)   Backward Elimination" << endl;
     cout << "3)   Nate's Special Algorithm" << endl;
+    cin >> searchType;
     cout << endl << endl;
+    
+    if(searchType == 1)
+    {
+        forward_feature_search(data);
+    }
+    
+
     
     
     
