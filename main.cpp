@@ -163,7 +163,6 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<in
     {
         cout << setToCheck.at(i) + 1 << " ";
     }
-    cout << "after adding index " << feature_to_add << endl;
     //TEST OUTPUT
     
     double correctlyClassified = 0; 
@@ -176,7 +175,7 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<in
         //TEST 
         //int nearest = 0;
         
-        for (int j = 0; j < setToCheck.size(); j++)
+        for (int j = 0; j < data.get_NumInstances(); j++)
         {
             double tempDistance = 0;
             if (i == j) //leave one out
@@ -242,7 +241,7 @@ void forward_feature_search(Data_Set data)
                 double accuracy = 0; 
                 cout << "Considering adding the " << k + 1 << " feature" << endl;
                 accuracy = leave_one_out_cross_validation_add(data, current_set_of_features, (k)); //(k + 1)
-                cout << "TEST accuracy is: " << accuracy << endl; //TEST
+                //cout << "TEST accuracy is: " << accuracy << endl; //TEST
                 //cout << "Finished leave one out test" << endl;
                 if (accuracy > best_so_far_accuracy)
                 {
