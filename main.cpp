@@ -56,11 +56,15 @@ class Data_Set
 {
     private:
         vector<Instance> instances; //hold each instance with it's features
+        int numInstances;
+        int numFeatures; 
         
     public: 
         Data_Set(vector<Instance> data)
         {
             instances = data; //add data to instances vector
+            numInstances = data.size();
+            numFeatures = data.at(0).get_features().size();
         };
         
         vector<Instance> get_Instances()
@@ -70,12 +74,14 @@ class Data_Set
         
         int get_NumInstances() //return size of instances
         {
-            return instances.size();
+            return numInstances;
+            //return instances.size();
         }
         
         int get_NumFeatures()
         {
-            return instances.at(0).get_features().size();
+            return numFeatures;
+            //return instances.at(0).get_features().size();
         }
         //double leave_one_out_cross_validation_add(Data_Set, vector<int>, int);
         //double leave_one_out_cross_validation_remove(Data_Set, vector<int>, int);
@@ -144,7 +150,7 @@ double calc_euclidian(vector<double> a, vector<double> b, vector<int> setToCheck
     }
     
     //cout << "Distance: " << sqrt(euclidian) << endl;
-    return sqrt(euclidian);
+    return sqrt(euclidian); 
 }
 
 /* iterate through entire set of instances leaving one out each time
@@ -152,7 +158,7 @@ double calc_euclidian(vector<double> a, vector<double> b, vector<int> setToCheck
     i closest to i, if class_type of both are same then add one to correct
     count, at end of loop return correct count/total instances
     */
-double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<int>current_set, int feature_to_add)
+double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set* data, vector<int>current_set, int feature_to_add)
 {
     vector<int> setToCheck = current_set;
     setToCheck.push_back(feature_to_add);
@@ -167,7 +173,7 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<in
     
     double correctlyClassified = 0; 
     
-    for (int i = 0; i < data.get_NumInstances(); i++)
+    for (int i = 0; i < data->get_NumInstances(); i++)
     {
         double shortestDistance = INT_MAX; 
         Instance nearestNeighbor; 
@@ -175,7 +181,7 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<in
         //TEST 
         //int nearest = 0;
         
-        for (int j = 0; j < data.get_NumInstances(); j++)
+        for (int j = 0; j < data->get_NumInstances(); j++)
         {
             double tempDistance = 0;
             if (i == j) //leave one out
@@ -185,13 +191,13 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<in
             else
             {
                 //cout << "Calling euclidian for " << j << "th instance" << endl; //TEST
-                tempDistance = calc_euclidian(data.get_Instances().at(i).get_features(), data.get_Instances().at(j).get_features(), setToCheck);
+                tempDistance = calc_euclidian(data->get_Instances().at(i).get_features(), data->get_Instances().at(j).get_features(), setToCheck);
                 //cout << "tempDistance: " << tempDistance << ". shortestDistance: " << shortestDistance <<  endl; //TEST 
                 if (tempDistance < shortestDistance)
                 {
                     //cout << "tempDistance < shortestDistnace" << endl;
                     shortestDistance = tempDistance; //update newest shortest
-                    nearestNeighbor = data.get_Instances().at(j); 
+                    nearestNeighbor = data->get_Instances().at(j); 
                     
                     //TEST 
                     //nearest = j;
@@ -202,14 +208,14 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set data, vector<in
         //TEST
         //cout << "nearest neighbor index: " << nearest << endl;
         
-        if (nearestNeighbor.get_class() == data.get_Instances().at(i).get_class())
+        if (nearestNeighbor.get_class() == data->get_Instances().at(i).get_class())
         {
             correctlyClassified += 1; //increment # correct
         }
         
     }
-    cout << "Accuracy: " << (correctlyClassified/(data.get_NumInstances() - 1)) << endl << endl;
-    return (correctlyClassified/(data.get_NumInstances() - 1)); //-1 because leave one out 
+    cout << "Accuracy: " << (correctlyClassified/(data->get_NumInstances() - 1)) << endl << endl;
+    return (correctlyClassified/(data->get_NumInstances() - 1)); //-1 because leave one out 
     //return rand(); //function stub
 }
 
@@ -223,18 +229,18 @@ double leave_one_out_cross_validation_remove(Data_Set data, vector<int>current_s
     return rand(); //function stub
 }
 
-void forward_feature_search(Data_Set data)
+void forward_feature_search(Data_Set* data)
 {
     vector<int> current_set_of_features;
     vector<int> best_set_so_far;
     double overall_best_accuracy;
-    for (int i = 0; i < data.get_NumFeatures(); i++)
+    for (int i = 0; i < data->get_NumFeatures(); i++)
     {
         cout << "On the " << i + 1 << "th level of the search tree" << endl;
         int feature_to_add_at_this_level = 0;
         double best_so_far_accuracy = 0;
         
-        for (int k = 0; k < data.get_NumFeatures(); k++)
+        for (int k = 0; k < data->get_NumFeatures(); k++)
         {
             if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
             {
@@ -269,7 +275,7 @@ void forward_feature_search(Data_Set data)
     {
         cout << best_set_so_far.at(i) + 1 <<  " ";
     }
-    cout << "with accuracy" << overall_best_accuracy << endl;
+    cout << "with accuracy " << overall_best_accuracy << endl;
     
     return;
 }
@@ -368,7 +374,7 @@ int main()
     
     if(searchType == 1)
     {
-        forward_feature_search(data);
+        forward_feature_search(&data);
     }
     
 
