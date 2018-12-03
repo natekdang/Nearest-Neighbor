@@ -163,6 +163,8 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set* data, vector<i
     vector<int> setToCheck = current_set;
     setToCheck.push_back(feature_to_add);
     
+    vector<Instance> instances = data->get_Instances();
+    
     //TEST OUTPUT
     cout << "Checking features: ";
     for (int i = 0; i < setToCheck.size(); i++)
@@ -191,7 +193,7 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set* data, vector<i
             else
             {
                 //cout << "Calling euclidian for " << j << "th instance" << endl; //TEST
-                tempDistance = calc_euclidian(data->get_Instances().at(i).get_features(), data->get_Instances().at(j).get_features(), setToCheck);
+                tempDistance = calc_euclidian(instances.at(i).get_features(), instances.at(j).get_features(), setToCheck);
                 //cout << "tempDistance: " << tempDistance << ". shortestDistance: " << shortestDistance <<  endl; //TEST 
                 if (tempDistance < shortestDistance)
                 {
