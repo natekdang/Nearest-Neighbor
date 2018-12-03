@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iomanip> //for outputting floats
 #include <algorithm> //find k in vector
+#include <limits.h>
 
 using namespace std;
 
@@ -86,18 +87,13 @@ vector<Instance> parseFile(string fileName)
     {
         Instance newInst; 
         vector<double> features; 
-        //cout << features.size() << "TEST" << endl;
         int class_type = -1;
         double featToAdd = 0; 
         string inputRow; //temp string  
         
         getline(my_input_file, inputRow);  
         
-        //cout << inputRow << endl; //TEST
-        
         istringstream ss(inputRow);
-        
-        //cout << ss.str() << " : ss.str() test" << endl; //TEST
         
         ss >> class_type;
         
@@ -117,46 +113,77 @@ vector<Instance> parseFile(string fileName)
             {
                 newInst.add_feature(featToAdd);
             }
-            
         }
-        
         instanceVect.push_back(newInst);  
     }
     
     my_input_file.close();
   
-    for (int i = 0; i < instanceVect.size(); i++) //TESTING PARSING
+    /*for (int i = 0; i < instanceVect.size(); i++) //TESTING PARSING
     {
         instanceVect.at(i).output();
-    } 
-    
+    } */
     
     cout << "This dataset has " << instanceVect.at(0).get_features().size() << " features with " << instanceVect.size() << " instances." << endl;
     
     return instanceVect;
-    
-    
 }
 
 //helper for nearest neighbor, need to implement
-double calc_euclidian(vector<double> a, vector<double> b, vector<double> indices)
+double calc_euclidian(vector<double> a, vector<double> b, vector<int> setToCheck)
 {
     double euclidian = 0; 
-    for (int i = 0; i < indices.size(); i++) //calculate for only features in indices 
+    for (int i = 0; i < setToCheck.size(); i++) //calculate for only features in indices 
     {
-        euclidian += pow(a.at(indices.at(i)) - b.at(indices.at(i)), 2); 
+        euclidian += pow(abs(a.at(setToCheck.at(i) - 1) - b.at(setToCheck.at(i) - 1)), 2); //set to check has num of feature but need to -1 because index starts at 0
     }
+    
+    cout << "Distance: " << sqrt(euclidian) << endl;
     return sqrt(euclidian);
 }
 
-double Data_Set::leave_one_out_cross_validation_add(Data_Set data, vector<int>current_set, int feature_to_add)
-{
-    /* iterate through entire set of instances leaving one out each time
+/* iterate through entire set of instances leaving one out each time
     calculate ecludian of each and determine the instance j that is 
     i closest to i, if class_type of both are same then add one to correct
     count, at end of loop return correct count/total instances
     */
-    return rand();
+double Data_Set::leave_one_out_cross_validation_add(Data_Set data, vector<int>current_set, int feature_to_add)
+{
+    vector<int> setToCheck = current_set;
+    setToCheck.push_back(feature_to_add);
+    double correctlyClassified = 0; 
+    for (int i = 0; i < data.get_NumInstances(); i++)
+    {
+        double shortestDistance = INT_MAX; 
+        Instance nearestNeighbor; 
+        
+        for (int j = 0; j < setToCheck.size(); j++)
+        {
+            double tempDistance = 0;
+            if (i == j) //leave one out
+            {
+                continue; 
+            }
+            else
+            {
+                tempDistance = calc_euclidian(data.instances.at(i).get_features(), data.instances.at(j).get_features(), setToCheck);
+                if (tempDistance < shortestDistance)
+                {
+                    shortestDistance = tempDistance; //update newest shortest
+                    nearestNeighbor = data.instances.at(j); 
+                }
+            }
+        } //inner for
+        
+        if (nearestNeighbor.get_class() == data.instances.at(i).get_class())
+        {
+            correctlyClassified += 1; //increment # correct
+        }
+        
+    }
+    cout << "Accuracy: " << (correctlyClassified/(data.get_NumInstances() - 1)) << endl;
+    return (correctlyClassified/(data.get_NumInstances() - 1)); //-1 because leave one out 
+    //return rand(); //function stub
 }
 
 double Data_Set::leave_one_out_cross_validation_remove(Data_Set data, vector<int>current_set, int feature_to_remove)
@@ -185,7 +212,7 @@ void forward_feature_search(Data_Set data)
                 int accuracy = 0; 
                 cout << "Considering adding the " << k << " feature" << endl;
                 accuracy = data.leave_one_out_cross_validation_add(data, current_set_of_features, (k + 1));
-                
+                cout << "Finished leave one out test" << endl;
                 if (accuracy > best_so_far_accuracy)
                 {
                     best_so_far_accuracy = accuracy;
@@ -205,7 +232,7 @@ void forward_feature_search(Data_Set data)
 void backward_feature_search(Data_Set data)
 {
     vector<int> current_set_of_features;
-    for (int i = 1; i <= data.get_NumFeatures(); i++) //start with all features
+    for (int i = 1; i < data.get_NumFeatures(); i++) //start with all features
     {
         current_set_of_features.push_back(i);
     }
@@ -215,7 +242,7 @@ void backward_feature_search(Data_Set data)
         int feature_to_remove_at_this_level = 0;
         int best_so_far_accuracy = 0;
         
-        for (int k = 1; k <= data.get_NumFeatures(); k++)
+        for (int k = 1; k < data.get_NumFeatures(); k++)
         {
             if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
             {
