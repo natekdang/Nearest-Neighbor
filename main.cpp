@@ -158,7 +158,7 @@ double calc_euclidian(vector<double> a, vector<double> b, vector<int> setToCheck
     i closest to i, if class_type of both are same then add one to correct
     count, at end of loop return correct count/total instances
     */
-double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set* data, vector<int>current_set, int feature_to_add)
+double leave_one_out_cross_validation_add(Data_Set* data, vector<int>current_set, int feature_to_add)
 {
     vector<int> setToCheck = current_set;
     setToCheck.push_back(feature_to_add);
@@ -221,14 +221,54 @@ double /*Data_Set::*/leave_one_out_cross_validation_add(Data_Set* data, vector<i
     //return rand(); //function stub
 }
 
-double leave_one_out_cross_validation_remove(Data_Set data, vector<int>current_set, int feature_to_remove)
+double leave_one_out_cross_validation_remove(Data_Set* data, vector<int>current_set, int feature_to_remove)
 {
-    /* iterate through entire set of instances leaving one out each time
-    calculate ecludian of each and determine the instance j that is 
-    i closest to i, if class_type of both are same then add one to correct
-    count, at end of loop return correct count/total instances
-    */
-    return rand(); //function stub
+    vector<int> setToCheck = current_set;
+    setToCheck.erase(remove(setToCheck.begin(), setToCheck.end(), feature_to_remove), setToCheck.end());
+    
+    vector<Instance> instances = data->get_Instances();
+    
+    //TEST OUTPUT
+    cout << "Checking features: ";
+    for (int i = 0; i < setToCheck.size(); i++)
+    {
+        cout << setToCheck.at(i) + 1 << " ";
+    }
+    //TEST OUTPUT
+    
+    double correctlyClassified = 0; 
+    
+    for (int i = 0; i < data->get_NumInstances(); i++)
+    {
+        double shortestDistance = INT_MAX; 
+        Instance nearestNeighbor; 
+        
+        for (int j = 0; j < data->get_NumInstances(); j++)
+        {
+            double tempDistance = 0;
+            if (i == j) //leave one out
+            {
+                continue; 
+            }
+            else
+            {
+                tempDistance = calc_euclidian(instances.at(i).get_features(), instances.at(j).get_features(), setToCheck);
+                if (tempDistance < shortestDistance)
+                {
+                    shortestDistance = tempDistance; //update newest shortest
+                    nearestNeighbor = data->get_Instances().at(j); 
+                }
+            }
+        } //inner for
+        
+        if (nearestNeighbor.get_class() == data->get_Instances().at(i).get_class())
+        {
+            correctlyClassified += 1; //increment # correct
+        }
+        
+    }
+    cout << "Accuracy: " << (correctlyClassified/(data->get_NumInstances() - 1)) << endl << endl;
+    return (correctlyClassified/(data->get_NumInstances() - 1)); //-1 because leave one out 
 }
 
 void forward_feature_search(Data_Set* data)
@@ -282,57 +322,30 @@ void forward_feature_search(Data_Set* data)
     return;
 }
 
-
-/*
-function  feature_search_demo(data)
- 
-current_set_of_features = []; % Initialize an empty set
- 
-for i = 1 : size(data,2)-1 
-    disp(['On the ',num2str(i),'th level of the search tree'])
-    feature_to_add_at_this_level = [];
-    best_so_far_accuracy    = 0;    
-    
-     for k = 1 : size(data,2)-1 
-       if isempty(intersect(current_set_of_features,k)) % Only consider adding, if not already added.
-        disp(['--Considering adding the ', num2str(k),' feature'])
-        accuracy = leave_one_out_cross_validation(data,current_set_of_features,k+1);
-        
-        if accuracy > best_so_far_accuracy 
-            best_so_far_accuracy = accuracy;
-            feature_to_add_at_this_level = k;            
-        end        
-      end
-     end
-    
-    current_set_of_features(i) =  feature_to_add_at_this_level;
-    disp(['On level ', num2str(i),' i added feature ', num2str(feature_to_add_at_this_level), ' to current set'])
-        
- end 
-end
-*/
-
-/*void backward_feature_search(Data_Set data)
+void backward_feature_search(Data_Set* data)
 {
     vector<int> current_set_of_features;
-    for (int i = 1; i < data.get_NumFeatures(); i++) //start with all features
+    for (int i = 0; i < data->get_NumFeatures(); i++) //start with all features
     {
         current_set_of_features.push_back(i);
     }
-    for (int i = 1; i <= data.get_NumFeatures(); i++)
+    vector<int> best_set_so_far;
+    double overall_best_accuracy;
+    for (int i = 0; i < data->get_NumFeatures(); i++)
     {
-        cout << "On the " << i << "th level of the search tree" << endl;
+        cout << "On the " << i + 1 << "th level of the search tree" << endl;
         int feature_to_remove_at_this_level = 0;
-        int best_so_far_accuracy = 0;
+        double best_so_far_accuracy = 0;
         
-        for (int k = 1; k < data.get_NumFeatures(); k++)
+        for (int k = 0; k < data->get_NumFeatures(); k++)
         {
-            if (!(find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
+            if ((find(current_set_of_features.begin(), current_set_of_features.end(), k) != current_set_of_features.end()))
             {
-                int accuracy = 0; 
-                cout << "Considering removing the " << k << " feature" << endl;
-                accuracy = leave_one_out_cross_validation_remove(data, current_set_of_features, (k + 1));
-                
+                double accuracy = 0; 
+                cout << "Considering removing the " << k + 1 << " feature" << endl;
+                accuracy = leave_one_out_cross_validation_remove(data, current_set_of_features, (k)); //(k + 1)
+                //cout << "TEST accuracy is: " << accuracy << endl; //TEST
+                //cout << "Finished leave one out test" << endl;
                 if (accuracy > best_so_far_accuracy)
                 {
                     best_so_far_accuracy = accuracy;
@@ -342,12 +355,32 @@ end
             }
         }
         
-        current_set_of_features.push_back(feature_to_remove_at_this_level);  //NEEDS TO BE FIXED TO REMOVE FEATURE
-        cout << "On level " << i << " i removed feature " << feature_to_remove_at_this_level << " to current set" << endl;
+        current_set_of_features.erase(remove(current_set_of_features.begin(), current_set_of_features.end(), feature_to_remove_at_this_level), current_set_of_features.end());
+        
+        //tracking best accuracy entire search
+        if(best_so_far_accuracy > overall_best_accuracy)
+        {
+            best_set_so_far = current_set_of_features;
+            overall_best_accuracy = best_so_far_accuracy;
+        }
+        cout << "On level " << i + 1 << " i removed feature " << feature_to_remove_at_this_level + 1 << " from current set" << endl; //+1 because index starts at 0
     }
     
+    //output best subset
+    cout << "Best set of features are ";
+    for (int i = 0; i < best_set_so_far.size(); i++)
+    {
+        cout << best_set_so_far.at(i) + 1 <<  " ";
+    }
+    cout << "with accuracy " << overall_best_accuracy << endl;
+    
     return;
-} */
+}
+
+void nates_search(Data_set* data)
+{
+    return; //function stub
+}
 
 
 
@@ -374,9 +407,19 @@ int main()
     cin >> searchType;
     cout << endl << endl;
     
-    if(searchType == 1)
+    if (searchType == 1)
     {
         forward_feature_search(&data);
+    }
+    
+    if (searchType == 2)
+    {
+        backward_feature_search(&data);
+    }
+    
+    if (searchType == 3)
+    {
+        nates_search(&data);
     }
     
 
