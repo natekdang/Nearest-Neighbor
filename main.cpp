@@ -271,10 +271,11 @@ double leave_one_out_cross_validation_remove(Data_Set* data, vector<int>current_
     return (correctlyClassified/(data->get_NumInstances() - 1)); //-1 because leave one out 
 }
 
-double leave_one_out_cross_validation_nate(Data_Set* data, vector<int>current_set, int& numFeatWrong, int feature_to_add)
+double leave_one_out_cross_validation_nate(Data_Set* data, vector<int>current_set, int* numFeatWrong, int feature_to_add)
 {
     vector<int> setToCheck = current_set;
     setToCheck.push_back(feature_to_add);
+    int featuresCurrentlyWrong = 0; 
     
     vector<Instance> instances = data->get_Instances();
     
@@ -328,8 +329,19 @@ double leave_one_out_cross_validation_nate(Data_Set* data, vector<int>current_se
             correctlyClassified += 1; //increment # correct
         }
         
+        else 
+        {
+            featuresCurrentlyWrong += 1; 
+            
+            if (featuresCurrentlyWrong >= *numFeatWrong)
+            {
+                return 0; //alpha beta pruning
+            }
+        }
+        
     }
     cout << "Accuracy: " << (correctlyClassified/(data->get_NumInstances() - 1)) << endl << endl;
+    *numFeatWrong = featuresCurrentlyWrong; 
     return (correctlyClassified/(data->get_NumInstances() - 1)); //-1 because leave one out 
     //return rand(); //function stub
 }
@@ -445,7 +457,7 @@ void nates_search(Data_Set* data)
     vector<int> current_set_of_features;
     vector<int> best_set_so_far;
     double overall_best_accuracy;
-    int numfeatWrong;
+    int numFeatWrong = data->get_NumFeatures(); //set to max at first
     for (int i = 0; i < data->get_NumFeatures(); i++)
     {
         cout << "On the " << i + 1 << "th level of the search tree" << endl;
